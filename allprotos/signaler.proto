@@ -1,0 +1,374 @@
+syntax = "proto3";
+
+package signaler;
+
+option go_package = "./signalerpb";
+
+import "google/protobuf/timestamp.proto";
+import "allprotos/common.proto";
+
+message PaginationDataRequest {
+    uint32 limit = 1;
+    uint32 offset = 2;
+}
+
+message PaginationDataResponse {
+    uint32 previous_page_token = 1;
+    string next_page_token = 2;
+    uint64 total_number_of_records = 3;
+}
+
+enum SignalerType {
+    UNKNOWN_SIGNALER_TYPE = 0;
+    TA = 1;
+    EXTERNAL = 2;
+    TELEGRAM = 3;
+}
+
+enum SignalSide {
+    UNKNOWN_SIGNAL_SIDE = 0;
+    BUY = 1;
+    SELL = 2;
+}
+
+message TASignaler {
+    common.Strategy strategy = 1;
+    common.Interval interval = 2;
+    repeated common.IndicatorConfig indicator_configs = 3;
+}
+message TelegSignaler {
+    int64  channel_id = 1;
+}
+
+message ExternalSignaler {}
+
+enum ExecutionStrategy {
+    UNKNOWN_EXECUTION_STRATEGY = 0;
+    WAIT_FOR_CLOSE_SIGNAL = 1;
+    TP_AND_SL = 2;
+}
+
+message GenericSignaler {
+    uint32 id = 1;
+    uint32 creator_id = 2;
+    string name = 3;
+    string image_url = 4;
+    uint32 market_id = 5;
+    string base_currency = 6;
+    string description = 7;
+    SignalerType type = 8; // 1)internal ta strategy based 2) manual by experts 3) API 4) programmatic (crawl, sentiment) 5) aggregator bot!
+    repeated string pairs = 9; 
+    string default_order_type = 10; // currently unused 
+    ExecutionStrategy default_execution_strategy = 11;
+    bool activation_status = 12;
+    string money_management_strategy = 13;
+    double creator_performance_fee = 14;
+    double system_performance_fee = 15;
+    double creator_subscription_fee = 16;
+    double system_subscription_fee = 17;
+    double min_price_percentage = 18;
+    double max_price_percentage = 19;
+    double stop_loss_percentage = 20;
+    repeated double take_profits_percentages = 21;
+    google.protobuf.Timestamp created_at=22;
+    double win_rate=23;
+    double p_n_l = 24;
+    uint32 portfolio_max_number = 25;
+    uint32 number_of_portfolios = 26;
+    double price = 27;
+    string price_unit = 28;
+    string suitable_for = 29;
+    string creator_name = 30;
+    double assets_under_management = 31;
+    string creator_public_id = 32;
+    bool published = 33;
+}
+
+message Signaler {
+    GenericSignaler common_attributes = 1;
+    oneof type_attributes {
+        TASignaler ta_signaler = 2;
+        ExternalSignaler external_signaler = 3;
+        TelegSignaler teleg_signaler = 4;
+    }
+}
+
+enum SignalType {
+    UNKNOWN_SIGNAL_TYPE = 0;
+    LONG = 1;
+    SHORT = 2;
+}
+
+enum SignalStatus {
+    UNKNOWN_SIGNAL_STATUS = 0;
+    PENDING_SIGNAL_STATUS = 1;
+    OPEN_SIGNAL_STATUS = 2;
+    CLOSE_SIGNAL_STATUS = 3;
+}
+
+message Signal {
+    uint32 id = 1;
+    uint32 signaler_id = 2;
+    string pair = 3;
+    google.protobuf.Timestamp signal_date = 4;
+    string track_id = 5;
+    double min_price = 6;
+    double max_price = 7;
+    double stop_loss = 8;
+    repeated double take_profits = 9;
+    string order_type = 10; //to be used for market order 
+    ExecutionStrategy execution_strategy = 11;
+    double strength = 12;
+    SignalType type = 13;
+    bool valid = 14; // signals can be invalidated using InvalidateSignal()
+    google.protobuf.Timestamp open_date = 15;
+    google.protobuf.Timestamp close_date = 16;
+    double open_price = 17;
+    double close_price = 18;  
+    double p_n_l = 19;
+    double current_price = 20; // this value is being used to calculate pnl for open signals
+    SignalStatus status = 21;
+    uint32 leverage = 22;
+}
+
+
+message PublishSignalRequest {
+    uint32 signaler_id = 1;
+    string pair = 2;
+    ExecutionStrategy execution_strategy = 3;
+    SignalSide side = 4;
+    double min_price = 5;
+    double max_price = 6;
+    double stop_loss = 7;
+    repeated double take_profits = 8;
+}
+
+message PublishSignalResponse {
+}
+
+message InvalidateSignalRequest {
+    uint32 signal_id = 1;
+}
+
+message InvalidateSignalResponse{}
+
+message CreateSignalerRequest {
+    Signaler signaler = 1;
+}
+
+message CreateSignalerResponse {
+    uint32 id = 1;
+}
+
+message Meta {
+    uint32 total = 1;
+    uint32 limit = 2;
+    uint32 offset = 3;
+}
+
+message SignalersRequest {
+    uint32 creator_id = 1;
+    uint32 market_id = 2;
+    string base_currency = 3;
+    SignalerType type = 4;
+    repeated string pairs = 5; 
+    bool activation_status = 6;
+    string name = 7;
+    PaginationDataRequest pagination_data = 8;
+    bool include_portfolio = 9;
+    string suitable_for = 10;
+    string subscription_status = 11;
+    uint32 user_id = 12;
+    bool published = 13;
+}
+
+message SignalersResponse {
+    repeated Signaler signalers = 1;
+    Meta meta = 2;
+}
+
+message SignalerRequest{
+    uint32 id = 1;
+}
+
+message SignalerResponse{
+    Signaler signaler = 1;
+}
+
+message ActivateSignalerRequest{
+    uint32 signaler_id = 1;
+}
+
+message ActivateSignalerResponse{}
+
+message DeactivateSignalerRequest{
+    uint32 signaler_id = 1;
+}
+
+message DeactivateSignalerResponse{}
+
+message UpdateSignalerRequest {
+    uint32 id = 1;
+    string name = 2;
+    string image_url = 3;
+    string description = 4;
+    repeated string pairs = 5; 
+    string default_order_type = 6; // currently unused 
+    string default_execution_strategy = 7;
+    bool activation_status = 8;
+    double creator_performance_fee = 9;
+    double system_performance_fee = 10;
+    double creator_subscription_fee = 11;
+    double system_subscription_fee = 12;
+}
+
+message UpdateSignalerResponse {}
+
+message SignalerSignalsRequest {
+    uint32 signaler_id = 1;
+}
+
+message SignalerSignalsResponse {
+    repeated Signal signals = 1;
+}
+
+message CreateTelegramSignalPublisherRequest {
+    uint32 signaler_id = 1;
+    int64 channel_id = 2;
+    string bot_token = 3;
+}
+
+message CreateTelegramSignalPublisherResponse {
+    uint32 id = 1;
+}
+
+message TelegramSignalPublisher {
+    uint32 id = 1;
+    uint32 signaler_id = 2;
+    int64  channel_id = 3;
+    string bot_token = 4;
+    string signaler_name = 5;
+}
+
+message TelegramSignalPublishersRequest {
+    common.PaginationData pagination_data = 1;
+}
+
+message TelegramSignalPublishersResponse {
+    repeated TelegramSignalPublisher telegram_signal_publishers = 1;
+    common.Meta meta = 2;
+}
+
+message TelegramSignalPublisherRequest {
+    uint32 id = 1;
+}
+
+message TelegramSignalPublisherResponse {
+    TelegramSignalPublisher telegram_signal_publisher = 1;
+}
+
+message UpdateTelegramSignalPublisherRequest {
+    uint32 id = 1;
+    uint32 signaler_id = 2;
+    int64 channel_id = 3;
+    string bot_token = 4;
+}
+
+message UpdateTelegramSignalPublisherResponse {
+    uint32 id = 1;
+}
+
+message DeleteTelegramSignalPublisherRequest {
+    uint32 id = 1;
+}
+
+message DeleteTelegramSignalPublisherResponse {
+    uint32 id = 1;
+}
+
+message UpdateCreatorSignalerRequest {
+    uint32 id = 1;
+    string name = 2;
+    string image_url = 3;
+    string description = 4;
+    string suitable_for = 5;
+    double stop_loss_percentage = 6;
+    string default_execution_strategy = 7;
+    repeated double take_profits_percentages = 8;
+    double price = 9;
+    string price_unit = 10;
+    uint32 creator_id = 11;
+}
+
+message UpdateCreatorSignalerResponse {
+    uint32 id = 1;
+}
+
+message PublishSignalerRequest {
+    uint32 signaler_id = 1;
+}
+
+message PublishSignalerResponse {
+    uint32 id = 1;
+}
+
+message CheckTelegramAccountStatusRequest {}
+
+message CheckTelegramAccountStatusResponse {
+    bool logged_in = 1;
+}
+
+message VerifyPhoneNumberForTelegramRequest {
+    string phone_number = 1;
+}
+
+message VerifyPhoneNumberForTelegramResponse {
+    bool ok = 1;
+}
+
+message VerifyCodeForTelegramRequest {
+    string code = 1;
+}
+
+message VerifyCodeForTelegramResponse {
+    bool ok = 1;
+    bool need_secondary_code = 2;
+}
+
+message VerifySecondaryCodeForTelegramRequest {
+    string code = 1;
+}
+
+message VerifySecondaryCodeForTelegramResponse {
+    bool ok = 1;
+}
+
+message LogoutTelegramAccountRequest {}
+
+message LogoutTelegramAccountResponse {
+    bool ok = 1;
+}
+
+service SignalerService {
+    rpc PublishSignal(PublishSignalRequest) returns (PublishSignalResponse);
+    rpc InvalidateSignal(InvalidateSignalRequest) returns (InvalidateSignalResponse);
+    rpc CreateSignaler(CreateSignalerRequest) returns (CreateSignalerResponse);
+    rpc Signalers(SignalersRequest) returns (SignalersResponse);
+    rpc Signaler(SignalerRequest) returns (SignalerResponse);
+    rpc ActivateSignaler(ActivateSignalerRequest) returns (ActivateSignalerResponse);
+    rpc DeactivateSignaler(DeactivateSignalerRequest) returns (DeactivateSignalerResponse);
+    rpc UpdateSignaler(UpdateSignalerRequest) returns (UpdateSignalerResponse);
+    rpc SignalerSignals(SignalerSignalsRequest) returns (SignalerSignalsResponse);
+    rpc CreateTelegramSignalPublisher(CreateTelegramSignalPublisherRequest) returns (CreateTelegramSignalPublisherResponse);
+    rpc TelegramSignalPublishers(TelegramSignalPublishersRequest) returns (TelegramSignalPublishersResponse);
+    rpc TelegramSignalPublisher(TelegramSignalPublisherRequest) returns (TelegramSignalPublisherResponse);
+    rpc UpdateTelegramSignalPublisher(UpdateTelegramSignalPublisherRequest) returns (UpdateTelegramSignalPublisherResponse);
+    rpc DeleteTelegramSignalPublisher(DeleteTelegramSignalPublisherRequest) returns (DeleteTelegramSignalPublisherResponse);
+    rpc UpdateCreatorSignaler(UpdateCreatorSignalerRequest) returns (UpdateCreatorSignalerResponse);
+    rpc PublishSignaler(PublishSignalerRequest) returns (PublishSignalerResponse);
+    rpc CheckTelegramAccountStatus(CheckTelegramAccountStatusRequest) returns (CheckTelegramAccountStatusResponse);
+    rpc VerifyPhoneNumberForTelegram(VerifyPhoneNumberForTelegramRequest) returns (VerifyPhoneNumberForTelegramResponse);
+    rpc VerifyCodeForTelegram(VerifyCodeForTelegramRequest) returns (VerifyCodeForTelegramResponse);
+    rpc VerifySecondaryCodeForTelegram(VerifySecondaryCodeForTelegramRequest) returns (VerifySecondaryCodeForTelegramResponse);
+    rpc LogoutTelegramAccount(LogoutTelegramAccountRequest) returns (LogoutTelegramAccountResponse);
+}

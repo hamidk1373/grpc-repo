@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package taskmanager;
+
+option go_package = "./taskmanagerpb";
+
+enum Exchange {
+    UNKNOWN_EXCHANGE = 0;
+    BINANCE = 1;
+}
+
+enum Interval {
+    UNKNOWN_INTERVAL = 0;
+    MINUTES = 1;
+    THREE_MINUTES = 2;
+    FIVE_MINUTES = 3;
+    FIFTEEN_MINUTES = 4;
+    THIRTY_MINUTES = 5;
+    HOUR = 6;
+    TWO_HOURS = 7;
+    FOUR_HOURS = 8;
+    SIX_HOURS = 9;
+    EIGHT_HOURS = 10;
+    TWELVE_HOURS = 11;
+    DAY = 12;
+    THREE_DAYS = 13;
+    WEEK = 14;
+    MONTH = 15;
+}
+
+message ScheduleOhlcvsRequest {
+    Exchange exchange = 1;
+    string pair = 2;
+    Interval interval = 3;
+}
+
+
+message ScheduleOhlcvsResponse {}
+
+message UnscheduleOhlcvsRequest {
+    Exchange exchange = 1;
+    string pair = 2;
+    Interval interval = 3;
+}
+
+message UnscheduleOhlcvsResponse {}
+
+service TaskManagerService {
+    rpc ScheduleOhlcvs(ScheduleOhlcvsRequest) returns (ScheduleOhlcvsResponse);
+    rpc UnscheduleOhlcvs(UnscheduleOhlcvsRequest) returns (UnscheduleOhlcvsResponse);
+}

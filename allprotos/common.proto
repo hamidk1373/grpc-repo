@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package common;
+
+option go_package = "gitlab.com/shanpanze/grpc-repo/commonpb";
+
+import "google/protobuf/timestamp.proto";
+
+
+enum Market {
+    UNKNOWN_MARKET = 0;
+    CRYPTO_SPOT = 1;
+    CRYPTO_FUTURE = 2;
+}
+
+enum Exchange {
+    UNKNOWN_EXCHANGE = 0;
+    BINANCE = 1;
+    NOBITEX = 2;
+    ABANTETHER = 3;
+    BINANCE_FUTURE = 4;
+    ABANTETHER_FUTURES = 5;
+}
+
+enum Strategy {
+    UNKNOWN_STRATEGY = 0;
+    ICHIMOKU =1;
+    ICHIMOKU_RSI = 2;
+    ICHIMOKU_SMA = 3;
+    ICHIMOKU_EMA = 4;
+    MA = 5;
+    RANDOM = 6;
+    ICHIMOKUV2 = 7;
+}
+
+enum Interval {
+    UNKNOWN_INTERVAL = 0;
+    MINUTES = 1;
+    THREE_MINUTES = 2;
+    FIVE_MINUTES = 3;
+    FIFTEEN_MINUTES = 4;
+    THIRTY_MINUTES = 5;
+    HOUR = 6;
+    TWO_HOURS = 7;
+    FOUR_HOURS = 8;
+    SIX_HOURS = 9;
+    EIGHT_HOURS = 10;
+    TWELVE_HOURS = 11;
+    DAY = 12;
+    THREE_DAYS = 13;
+    WEEK = 14;
+    MONTH = 15;
+}
+
+message Config {
+    string key = 1;
+    int32 value = 2;
+}
+
+message IndicatorConfig {
+    string name = 1;
+    repeated Config configs = 2;
+}
+
+message OhlcvCalculation {
+    string key = 1;
+    string config = 2;
+    double value = 3;
+}
+
+message Ohlcv {
+    google.protobuf.Timestamp open_time = 1;
+    double open = 2;
+    double high = 3;
+    double low = 4;
+    double close = 5;
+    double volume = 6;
+    google.protobuf.Timestamp close_time = 7;
+    double quote_asset_volume = 8;
+    int32 number_of_trades = 9;
+}
+
+message OHLCVWithCalculations {
+    Ohlcv ohlcv = 1;
+    repeated OhlcvCalculation calculations = 2;
+}
+
+message Meta {
+    uint32 total = 1;
+    uint32 limit = 2;
+    uint32 offset = 3;
+}
+
+message PaginationData {
+    uint32 limit = 1;
+    uint32 offset = 2;
+}

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+git remote update
+
+VERSION=`git tag --sort=committerdate | tail -1`
+
+VERSION_PARTS=(${VERSION//./ })
+
+VNUM1=${VERSION_PARTS[0]}
+VNUM2=${VERSION_PARTS[1]}
+VNUM3=${VERSION_PARTS[2]}
+
+VNUM2=$((VNUM2+1))
+
+NEW_TAG="$VNUM1.$VNUM2.$VNUM3"
+
+git tag $NEW_TAG
+git push origin $NEW_TAG
+
+echo "new version $NEW_TAG published"

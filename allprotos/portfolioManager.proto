@@ -1,0 +1,222 @@
+syntax = "proto3";
+
+package portfoliomanager;
+
+option go_package = "./portfoliomanagerpb";
+
+import "allprotos/common.proto";
+import "google/protobuf/timestamp.proto";
+
+enum PositionStatus {
+    UNKNOWN_POSITION_STATUS = 0;
+    PENDING_TO_OPEN = 1;
+    FAILED_TO_OPEN = 2;
+    OPEN = 3;
+    PENDING_TO_CLOSE = 4;
+    FAILED_TO_CLOSE = 5;
+    CLOSE = 6;
+    OPEN_CANCELLED = 7; 
+}
+
+enum PortfolioStatus {
+    UNKNOWN_PORTFOLIO_STATUS = 0;
+    PENDING_FOR_SUBSCRIPTION = 1;
+    SUBSCRIPTION_FAILED = 2;
+    ACTIVE = 3;
+    PENDING_FOR_DEACTIVATION = 4;
+    INACTIVE = 5;
+    PENDING_FOR_CANCELATION = 6;
+    CANCELED = 7;
+    EXCHANGE_OUT_OF_SYNC = 8;
+    PAUSED = 9;
+    INVALID_API_KEY = 10;
+}
+
+message PaginationDataRequest {
+    uint32 limit = 1;
+    uint32 offset = 2;
+}
+
+message DeletePortfolioRequest {
+    uint32 id = 1;
+}
+
+message DeletePortfolioResponse {
+    uint32 id = 1;
+}
+
+message Position {
+    string pair = 1;
+    google.protobuf.Timestamp open_date = 2;
+    google.protobuf.Timestamp close_date = 3;
+    double open_fee_amount = 4;
+    double close_fee_amount = 5;
+    double open_price = 6;
+    double close_price = 7;
+    double amount = 8;
+    double quote_amount = 9;
+    double p_n_l = 10;
+    PositionStatus status = 11;
+    double current_price = 12;
+}
+
+
+message ValueHistory {
+    google.protobuf.Timestamp date = 1;
+    double value = 2;
+}
+
+
+message CreatePortfolioRequest {
+    uint32 user_id = 1;
+    uint32 signaler_id = 2;
+    uint32 user_api_key_id = 3;
+    double assigned_amount = 4;
+    double upper_limit = 5;
+    double lower_limit = 6;
+    google.protobuf.Timestamp expiration_date = 7;
+}
+
+message CreatePortfolioResponse {
+    uint32 id = 1;
+}
+
+message Portfolio {
+    uint32 id = 1;
+    uint32 signaler_id = 2;
+    string signaler_name = 3;
+    string user = 4;
+    uint32 user_api_key_id = 5;
+    string user_api_key_name = 6;
+    common.Exchange exchange = 7;
+    double assigned_amount = 8;
+    double remaining_amount = 9;
+    double p_n_l = 10;
+    repeated Position positions = 11;
+    repeated ValueHistory value_history = 12;
+    string base_currency = 13;
+    double upper_limit = 14;
+    double lower_limit = 15;
+    double win_rate = 16;
+    PortfolioStatus status = 17;
+    google.protobuf.Timestamp created_at = 18;
+    double price = 19;
+    string price_unit = 20;
+    string signaler_image = 21;
+    google.protobuf.Timestamp expiration_date = 22;
+    uint32 userId=23;
+}
+
+message Meta {
+    uint32 total = 1;
+    uint32 limit = 2;
+    uint32 offset = 3;
+}
+
+message PortfoliosRequest {
+    uint32 user_id = 1;
+    uint32 signaler_id = 2;
+    string currency = 3;
+    PortfolioStatus status = 4;
+    PaginationDataRequest pagination_data = 5;
+}
+
+message PortfoliosResponse {
+    repeated Portfolio portfolios = 1;
+    Meta meta = 2;
+}
+
+message PortfolioRequest {
+    uint32 id = 1;
+}
+
+message PortfolioResponse {
+    Portfolio portfolio = 1;
+}
+
+message DeactivatePortfolioRequest {
+    uint32 portfolio_id = 1;
+    bool close_positions = 2;
+}
+
+message DeactivatePortfolioResponse {
+}
+
+message PausePortfolioRequest {
+    uint32 portfolio_id = 1;
+    bool close_positions = 2;
+    uint32 user_id = 3;
+    bool is_admin = 4;
+}
+
+message PausePortfolioResponse {
+}
+
+message UnpausePortfolioRequest {
+    uint32 portfolio_id = 1;
+    uint32 user_id = 2;
+    bool is_admin = 3;
+}
+
+message UnpausePortfolioResponse {
+}
+
+message CancelSubscriptionRequest {
+    uint32 portfolio_id = 1;
+    uint32 user_id = 2;
+    bool is_admin = 3;
+}
+
+message CancelSubscriptionResponse {
+}
+
+message UpdatePortfolioThresholdRequest {
+    uint32 portfolio_id = 1;
+    double upper_limit = 2;
+    double lower_limit = 3;
+    uint32 user_id = 4;
+}
+message UpdatePortfolioExpirationDateRequest {
+    uint32 portfolio_id = 1;
+    google.protobuf.Timestamp expiration_date = 2;
+    uint32 user_id = 3;
+}
+
+message UpdatePortfolioThresholdResponse {
+}
+message UpdatePortfolioExpirationDateResponse {
+}
+
+message UpdateAssignedAmountRequest {
+    uint32 portfolio_id = 1;
+    double assigned_amount = 2;
+    uint32 user_id = 3;
+}
+
+message UpdateAssignedAmountResponse {
+}
+
+message AssignedAmountInCurrencyRequest {
+    string currency = 1;
+    uint32 user_id = 2;
+    common.Exchange exchange = 3;
+}
+
+message AssignedAmountInCurrencyResponse {
+    double value = 1;
+}
+
+service PortfolioService {
+    rpc CreatePortfolio(CreatePortfolioRequest) returns (CreatePortfolioResponse);
+    rpc DeletePortfolio(DeletePortfolioRequest) returns (DeletePortfolioResponse);
+    rpc Portfolios(PortfoliosRequest) returns (PortfoliosResponse);
+    rpc Portfolio(PortfolioRequest) returns (PortfolioResponse);
+    rpc DeactivatePortfolio(DeactivatePortfolioRequest) returns (DeactivatePortfolioResponse);
+    rpc PausePortfolio(PausePortfolioRequest) returns (PausePortfolioResponse);
+    rpc UnpausePortfolio(UnpausePortfolioRequest) returns (UnpausePortfolioResponse);
+    rpc CancelSubscription(CancelSubscriptionRequest) returns (CancelSubscriptionResponse);
+    rpc UpdatePortfolioThreshold(UpdatePortfolioThresholdRequest) returns (UpdatePortfolioThresholdResponse);
+    rpc UpdateAssignedAmount(UpdateAssignedAmountRequest) returns (UpdateAssignedAmountResponse);
+    rpc AssignedAmountInCurrency(AssignedAmountInCurrencyRequest) returns (AssignedAmountInCurrencyResponse);
+    rpc UpdatePortfolioExpirationDate(UpdatePortfolioExpirationDateRequest) returns (UpdatePortfolioExpirationDateResponse);
+}

@@ -1,0 +1,217 @@
+syntax = "proto3";
+
+package externalgateway;
+
+option go_package = "./externalgatewaypb";
+
+import "google/protobuf/timestamp.proto";
+import "allprotos/common.proto";
+
+
+
+enum CreatePaymentStatus {
+    UNKNOWN_STATUS = 0;
+    PENDING = 1;
+    SUCCESS = 2;
+}
+
+message PaginationDataRequest {
+    uint32 page_size = 1;
+    string page_token = 2;
+}
+
+message PaginationDataResponse {
+    uint32 previous_page_token = 1;
+    string next_page_token = 2;
+    uint64 total_number_of_records = 3;
+}
+
+
+
+message OhlcvsRequest {
+    repeated string pairs = 1;
+    common.Interval interval = 2;
+    google.protobuf.Timestamp from_date = 3;
+    google.protobuf.Timestamp to_date = 4;
+    common.Exchange exchange = 5;
+    bool save = 6;
+}
+
+message PairOhlcvs {
+    string pair = 1;
+    repeated common.Ohlcv ohlcvs = 2;
+    common.Interval interval = 3;
+}
+
+message OhlcvsResponse{
+    repeated PairOhlcvs pair_ohlcvs = 1;
+}
+
+message ExchangeData {
+    string name = 1;
+    string name_identifier =2;
+    common.Market market = 3;
+}
+
+message ExchangesRequest{
+    common.Market market = 1;
+}
+
+message ExchangesResponse { 
+    repeated ExchangeData exchanges = 1;
+}
+
+message ExchangeRequest{
+    common.Exchange exchange = 1;
+}
+
+message ExchangeResponse{
+    ExchangeData exchange = 1;
+}
+
+message OhlcvsMessageRequest{
+    common.Exchange exchange = 1;
+    string pair = 2;
+    common.Interval interval = 3;
+}
+
+message OhlcvsMessageResponse{}
+
+message BalanceRequest {
+    string currency = 1;
+    uint32 user_api_key_id = 2;
+}
+
+message BalanceResponse {
+    double value = 1;
+}
+
+message FetchRealtimeValuesRequest{
+}
+
+message FetchRealtimeValuesResponse{
+    string pair = 1;
+    double value = 2;
+    google.protobuf.Timestamp timestamp = 3;
+    common.Exchange exchange = 4;
+    common.Market market = 5;
+}
+
+message ValidateAPIKeyRequest{
+    string api_key = 1;
+    string secret_key = 2;
+    string passphrase = 3;
+    common.Exchange exchange = 5;
+}
+
+message ValidateAPIKeyResponse{
+    bool valid = 1;
+}
+
+message SendTelegramMessageRequest{
+    string message = 1;
+    int64 chat_id = 2;
+    string bot_token = 3;
+}
+
+message SendTelegramMessageResponse{
+    bool sent = 1;
+}
+
+message SendNotificationRequest{
+    string email = 1;
+    int64 telegram_id = 2;
+    string subject = 3;
+    string content_title = 4;
+    string description = 5;
+    map<string, string> data = 6; 
+    string footer_description = 7;
+}
+
+message SendNotificationResponse{
+    bool sent = 1;
+}
+
+message ReportUnexpectedEventRequest {
+    string title = 1;
+    string message = 2;
+    map<string, string> data = 3;
+}
+
+message ReportUnexpectedEventResponse {}
+
+message OhlcvWithCalculationsRequest{
+    string pair = 1;
+    common.Interval interval = 2;
+    google.protobuf.Timestamp from_date = 3;
+    google.protobuf.Timestamp to_date = 4;
+    repeated common.IndicatorConfig indicator_configs = 5;
+    string strategyName = 6; // if strategyName is sent, indicators will be calculated in real time
+    bool futures = 7;
+}
+
+message OhlcvsWithCalculationsResponse{
+    repeated common.OHLCVWithCalculations ohlcv_with_calculations = 2;
+}
+
+message ImportUSDTPairsRequest{
+    common.Exchange exchange = 1;
+}
+
+message ImportUSDTPairsResponse{
+    bool success = 1;
+}
+
+message CreatePaymentRequest {
+    uint32 signaler_id = 1;
+    uint32 user_api_key_id = 2;
+    double assigned_amount = 3;
+    double upper_limit = 4;
+    double lower_limit = 5; 
+}
+
+message CreatePaymentResponse {
+    uint32 id = 1;
+    string payment_uid = 2;
+    string payment_url = 3;
+    CreatePaymentStatus status = 4;
+}
+
+message VerifyPaymentRequest {
+    string payment_uid = 1;
+    uint32 signaler_id = 2;
+    uint32 user_api_key_id = 3;
+    double assigned_amount = 4;
+    double upper_limit = 5;
+    double lower_limit = 6; 
+}
+
+message VerifyPaymentResponse {
+    bool success = 1;
+}
+
+message MarketsRequest {
+}
+
+message MarketsResponse {
+    repeated common.Market markets = 1;
+}
+
+service ExternalGatewayService {
+    rpc OhlcvsWithCalculations(OhlcvWithCalculationsRequest) returns (OhlcvsWithCalculationsResponse);
+    rpc Ohlcvs(OhlcvsRequest) returns (OhlcvsResponse);
+    rpc OhlcvsStream(OhlcvsRequest) returns (stream OhlcvsResponse);
+    rpc Exchanges(ExchangesRequest) returns(ExchangesResponse);
+    rpc Exchange(ExchangeRequest) returns(ExchangeResponse);
+    rpc OhlcvsMessage(OhlcvsMessageRequest) returns (OhlcvsMessageResponse);
+    rpc Balance(BalanceRequest) returns (BalanceResponse);
+    rpc FetchRealtimeValues(FetchRealtimeValuesRequest) returns (stream FetchRealtimeValuesResponse);
+    rpc ValidateAPIKey(ValidateAPIKeyRequest) returns (ValidateAPIKeyResponse);
+    rpc SendTelegramMessage(SendTelegramMessageRequest) returns (SendTelegramMessageResponse);
+    rpc ReportUnexpectedEvent(ReportUnexpectedEventRequest) returns (ReportUnexpectedEventResponse);
+    rpc SendNotification(SendNotificationRequest) returns (SendNotificationResponse);
+    rpc ImportUSDTPairs(ImportUSDTPairsRequest) returns (ImportUSDTPairsResponse);
+    rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+    rpc VerifyPayment(VerifyPaymentRequest) returns (VerifyPaymentResponse);
+    rpc Markets(MarketsRequest) returns (MarketsResponse);
+}

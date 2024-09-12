@@ -1,0 +1,4 @@
+# Generating go output from proto files
+# Run this command in terminal, in root directory of the project.
+# Replace {proto_file_name} with your proto file name
+protoc --go_out=. --go-grpc_out=. allprotos/{proto_file_name}.proto

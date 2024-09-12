@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package broker;
+
+option go_package = "./brokerpb";
+
+import "google/protobuf/timestamp.proto";
+import "allprotos/common.proto";
+
+message PairOhlcvs {
+    string pair = 1;
+    repeated Ohlcv ohlcvs = 2;
+    common.Interval interval = 3;
+}
+
+enum OrderResultStatus {
+    UNKNOWN_ORDER_RESULT_STATUS = 0;
+    FILLED = 1;
+    INVALID_API_KEY = 2;
+    UNKNOWN_REAL_TIME_PRICE = 3; // The realtime price must be available in cache to check for minValue/maxValue conditions
+    PRICE_NOT_BETWEEN_MIN_MAX = 4;
+    ERROR_FROM_EXCHANGE = 5;
+    CANCELLED = 6;
+}
+
+message Ohlcv {
+    google.protobuf.Timestamp open_time = 1;
+    double open = 2;
+    double high = 3;
+    double low = 4;
+    double close = 5;
+    double volume = 6;
+    google.protobuf.Timestamp close_time = 7;
+    double quote_asset_volume = 8;
+    int32 number_of_trades = 9;
+}
+
+message Order {
+    uint32 position_id = 1;
+    string pair = 2;
+    string side = 3; // BUY or SELL
+    string type = 4; // MARKET or LIMIT or ...
+    double amount = 5; // for BTCUSDT, it refers to the quantity of BTC
+    double quote_amount = 6; // for BTCUSDT, it refers to the quantity of USDT
+    double min_value = 7;
+    double max_value = 8;
+    string base_currency = 9;
+    double stop_lose_price = 10;
+    string track_id = 11;
+    uint32 leverage = 12;
+}
+
+message OrderResult {
+    uint32 position_id = 1;
+    string side = 2;
+    double amount = 3; // for BTCUSDT, it refers to the quantity of BTC
+    double quote_amount = 4; // for BTCUSDT, it refers to the quantity of USDT
+    double price = 5;
+    double fee = 6;
+    OrderResultStatus status = 7;
+    string track_id = 8;
+    double realized_pnl = 9;
+}
+
+message OpenSignal {
+    uint32 signaler_id = 1;
+    uint32 signal_id = 2;
+    string pair = 3;
+    string track_id = 4;
+}
+
+message CloseSignal {
+    uint32 signaler_id = 1;
+    uint32 signal_id = 2;
+    string pair = 3;
+    string track_id = 4;
+}

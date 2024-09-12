@@ -1,0 +1,183 @@
+syntax = "proto3";
+
+package backtest;
+
+option go_package = "./backtestpb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "allprotos/common.proto";
+
+
+enum ExperimentStatus {
+    UNKNOWN_EXPERIMENT_STATUS = 0;
+    PENDING = 1;
+    SUCCEED = 2;
+    FAILED = 3;
+}
+
+message CreateExperimentRequest {
+    repeated string pairs = 1;
+    common.Interval interval = 2;
+    common.Strategy strategy = 3;
+    google.protobuf.Timestamp from_date = 4;
+    google.protobuf.Timestamp to_date = 5;
+    uint32 bucket = 6;
+    uint32 step = 7;
+    double buy_fee = 8;
+    double sell_fee = 9;
+    double amount = 10;
+    int32 portfolio_max_number = 11;
+    repeated common.IndicatorConfig indicator_configs = 12;
+    uint32 strategy_risk_factor = 13;
+    string base_currency = 14;
+}
+
+message IndicatorInfo {
+    string name = 1;
+    repeated string config_names = 2;
+}
+
+message CreateExperimentResponse {
+    string message = 1;
+    uint32 experiment_id = 2;
+}
+
+message ExperimentRequest {
+    uint32 experiment_id = 1;
+}
+
+message ExperimentInfoRequest {
+    uint32 experiment_id = 1;
+}
+
+message Position {
+    string pair = 1;
+    google.protobuf.Timestamp open_date = 2;
+    google.protobuf.Timestamp close_date = 3;
+    double open_fee_amount = 4;
+    double close_fee_amount = 5;
+    double open_price = 6;
+    double close_price = 7;  
+    double amount_1 = 8;
+    double amount_2 = 9;
+    double p_n_l = 10;
+}
+
+message Backtest {
+    google.protobuf.Timestamp from_date = 1;
+    google.protobuf.Timestamp to_date = 2;
+    repeated Position positions = 3;
+    double p_n_l = 4;
+    double win_rate = 5;
+}
+
+message ExperimentResponse {
+    Experiment experiment = 1;
+}
+
+message Experiment {
+    uint32 id = 1;
+    repeated string pairs = 2;
+    string interval = 3;
+    google.protobuf.Timestamp from_date = 4;
+    google.protobuf.Timestamp to_date = 5;
+    int32 bucket = 6;
+    int32 step = 7;
+    double buy_fee = 8;
+    double sell_fee = 9;
+    double amount = 10;
+    int32 portfolio_max_number = 11;
+    google.protobuf.Timestamp created_at = 12;
+    google.protobuf.Duration exec_duration = 13;
+    repeated Backtest backtests = 14;
+    double p_n_l = 16;
+    string strategy = 17;
+    repeated string indicator_configs = 18;
+    ExperimentStatus status = 19;
+    double win_rate = 20;
+    string base_currency = 21;
+    double mean_cdf = 22;
+    double pnl_min = 23;
+    double pnl_max = 24;
+    double pnl_variance = 25;
+    double pnl_standard_deviation = 26;
+}
+
+message ExperimentInfoResponse {
+    ExperimentInfo experiment = 1;
+}
+
+message ExperimentInfo {
+    uint32 id = 1;
+    google.protobuf.Timestamp from_date = 2;
+    google.protobuf.Timestamp to_date = 3;
+    string interval = 4;
+    string strategy = 5;
+    repeated string pairs = 6;
+    int32 bucket = 7;
+    int32 step = 8;
+    double buy_fee = 9;
+    double sell_fee = 10;
+    double amount = 11;
+    int32 portfolio_max_number = 12;
+    repeated common.IndicatorConfig indicator_configs = 13;
+    string base_currency = 14;
+}
+
+message ExperimentsRequest {
+    uint32 limit = 1;
+    uint32 offset = 2;
+}
+
+message Meta {
+    uint32 total = 1;
+    uint32 limit = 2;
+    uint32 offset = 3;
+}
+
+message ExperimentsResponse {
+    repeated Experiment experiments = 1;
+    Meta meta = 2;
+}
+
+message StrategyIndicatorsRequest {
+    common.Strategy strategy = 1;
+}
+
+message StrategyIndicatorsResponse {
+    repeated IndicatorInfo indicator_infos = 1;
+}
+
+message CreateExperimentGroupRequest {
+    repeated string pairs = 1;
+    common.Strategy strategy = 2;
+    google.protobuf.Timestamp from_date = 3;
+    google.protobuf.Timestamp to_date = 4;
+    repeated common.Interval interval = 5;
+    uint32 min_bucket = 6;
+    uint32 bucket_increment = 7;
+    uint32 step = 8;
+    double buy_fee = 9;
+    double sell_fee = 10;
+    double amount = 11;
+    int32 portfolio_max_number = 12;
+    repeated common.IndicatorConfig indicator_configs = 13;
+    string base_currency = 14;
+}
+
+
+
+message CreateExperimentGroupResponse {
+    string message = 1;
+    uint32 experiment_group_id = 2;
+}
+
+service BacktestService {
+    rpc CreateExperimentGroup(CreateExperimentGroupRequest) returns (CreateExperimentGroupResponse);
+    rpc CreateExperiment(CreateExperimentRequest) returns (CreateExperimentResponse);
+    rpc Experiment(ExperimentRequest) returns (ExperimentResponse);
+    rpc ExperimentInfo(ExperimentInfoRequest) returns (ExperimentInfoResponse);
+    rpc Experiments(ExperimentsRequest) returns (ExperimentsResponse);
+    rpc StrategyIndicators(StrategyIndicatorsRequest) returns (StrategyIndicatorsResponse);
+}

@@ -1,0 +1,425 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "./userpb";
+
+import "google/protobuf/timestamp.proto";
+
+import "allprotos/common.proto";
+
+enum RequestType {
+    UNKNOWN_REQUEST_TYPE = 0;
+    CREATE =1;
+    READ = 2;
+    UPDATE = 3;
+    DELETE = 4;
+}
+
+enum RoleType {
+    UNKNOWN_ROLE = 0;
+    ADMIN =1;
+    SUPER_ADMIN = 2;
+    CUSTOMER = 3;
+    CREATOR = 4;
+}
+
+enum TicketStatus {
+    UNKNOWN_TICKET_STATUS = 0;
+    OPEN = 1;
+    PENDING = 2;
+    IN_PROGRESS = 3;
+    CLOSED = 4;
+}
+
+message PaginationDataRequest {
+    uint32 limit = 1;
+    uint32 offset = 2;
+}
+
+message PaginationDataResponse {
+    uint32 total = 1;
+    uint32 limit = 2;
+    uint32 offset = 3;
+}
+
+message PrepareAuthenticationWithGoogleRequest {
+    string state = 1;
+    string redirect_url = 2;
+    string google_recaptcha_response = 3;
+}
+
+message PrepareAuthenticationWithGoogleResponse {
+    string google_auth_redirect_link = 1;
+}
+
+message VerifyAuthenticationWithGoogleRequest {
+    string code = 1;
+    string state = 2;
+    string redirect_url = 3;
+}
+
+message UserClaims {
+    string email = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string picture = 4;
+    string access_token = 5;
+    RoleType role = 6;
+    uint32 user_id = 7;
+}
+
+message User {
+    uint32 id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string picture = 5;
+    RoleType role = 6;
+    string public_id = 7;
+}
+
+message UserProfile {
+    uint32 id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string picture = 5;
+    RoleType role = 6;
+    string phone = 7;
+    string bio = 8;
+    google.protobuf.Timestamp created_at = 9;
+    string public_id = 10;
+}
+
+
+message VerifyAuthenticationWithGoogleResponse {
+    UserClaims user_claims = 1;
+}
+
+message LogoutUserRequest {
+}
+
+message LogoutUserResponse {}
+
+message CheckRequestAccessRequest {
+    string page = 1;
+    RequestType request_type = 2;
+    string access_token = 3;
+    string operation_name = 4;
+    string operation_type = 5;
+    string origin_base_url = 6;
+}
+
+message CheckRequestAccessResponse {
+    UserClaims user_claims = 1;
+}
+
+message UsersRequest{
+    string searchInput = 1;
+    string role = 2;
+    PaginationDataRequest pagination_data = 3;
+}
+
+message UsersResponse{
+    repeated User users = 1;
+    PaginationDataResponse pagination_data = 2;
+}
+
+message UserByPublicIdRequest {
+    string public_id = 1;
+}
+
+message UserByPublicIdResponse {
+    UserProfile user = 1;
+}
+
+
+message UserAPIKeyRequest{
+    uint32 api_key_id = 2;
+}
+
+message UserAPIKeyResponse{
+    string name = 1;
+    common.Exchange exchange = 2;
+    string api_key = 3;
+    string secret_key = 4;
+    string passphrase = 5;
+    common.Market market = 6;
+    uint32 id = 7;
+}
+
+message UserAPIKeysRequest{
+    uint32 user_id = 1;
+    string market = 2;
+}
+
+message UserAPIKeySignalerInfo {
+    uint32 id = 1;
+    string name = 2;
+    string image = 3;
+}
+
+message UserAPIKeyInfo{
+    uint32 id = 1;
+    string name = 2;
+    common.Exchange exchange = 3;
+    repeated UserAPIKeySignalerInfo signalers = 4;
+    common.Market market = 5;
+    google.protobuf.Timestamp created_at = 6;
+}
+
+message TicketMessage {
+    uint32 id = 1;
+    string message = 2;
+    uint32 sender = 3;
+    google.protobuf.Timestamp created_at = 4;
+}
+
+message Ticket {
+    uint32 id = 1;
+    string topic = 2;
+    TicketStatus status = 3;
+    string request_type = 4;
+    uint32 user_id = 7;
+    repeated TicketMessage messages = 8;
+    google.protobuf.Timestamp created_at = 9;
+}
+
+message UserTicketsResponse {
+    repeated Ticket tickets = 1;
+    PaginationDataResponse pagination_data = 2;
+}
+
+message UserTicketsRequest {
+    uint32 user_id = 1;
+    string search = 2;
+    string status = 3;
+    PaginationDataRequest pagination_data = 4;
+
+}
+
+message UserTicketRequest {
+    uint32 ticket_id = 1;
+    uint32 user_id = 2;
+    bool is_admin = 3;
+}
+
+message UserTicketResponse {
+    Ticket ticket = 1;
+}
+
+message CreateTicketRequest {
+    string topic = 1;
+    string request_type = 2;
+    string message = 3;
+    uint32 user_id = 4;
+}
+
+message CloseTicketRequest {
+    uint32 ticket_id = 1;
+    uint32 user_id = 2;
+    bool is_admin = 3;
+}
+
+message CreateTicketResponse {
+    uint32 id = 1;
+}
+message CloseTicketResponse {
+    uint32 id = 1;
+}
+
+message AnswerTicketRequest {
+    uint32 ticket_id = 1;
+    string message = 2;
+    uint32 user_id = 3;
+    bool is_admin = 4;
+}
+
+message AnswerTicketResponse {
+    uint32 id = 1;
+}
+
+message UserAPIKeysResponse{
+    repeated UserAPIKeyInfo api_keys = 1;
+}
+
+message CreateUserAPIKeyRequest{
+    uint32 user_id = 1;
+    string name = 2;
+    common.Exchange exchange = 3;
+    string api_key = 4;
+    string secret_key = 5;
+    string passphrase = 6;
+    common.Market market = 7;
+}
+
+message CreateUserAPIKeyResponse {
+    uint32 id = 1;
+}
+
+message UpdateUserAPIKeyRequest {
+    uint32 user_id = 1;
+    uint32 id = 2;
+    string name = 3;
+    string api_key = 4;
+    string secret_key = 5;
+    string passphrase = 6;
+    bool is_admin = 8;
+}
+
+message UpdateUserAPIKeyResponse {
+    uint32 id = 1;
+}
+
+message DeleteUserAPIKeyRequest {
+    uint32 api_key_id = 1;
+}
+
+message DeleteUserAPIKeyResponse {
+    uint32 id = 1;
+}
+
+message UpdateUserProfileRequest {
+    uint32 id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string phone = 4;
+    string picture = 5;
+    string bio = 6;
+}
+
+message UpdateUserProfileResponse {
+    uint32 id = 1;
+}
+
+message UserProfileRequest {
+    uint32 id = 1;
+}
+
+message UserProfileResponse {
+    UserProfile user = 1;
+}
+
+message Currency {
+    string name = 1; 
+}
+
+message SupportedExchange{
+    string name = 1;
+}
+
+message Pair {
+    uint32 id = 1;
+    string name = 2;
+    string base_asset = 3;
+    string quote_asset = 4;
+    repeated SupportedExchange supported_exchanges = 5;
+    int32 base_asset_precision = 6;
+    int32 quote_asset_precision = 7;
+}
+
+message CreatePairRequest {
+    Pair pair = 1;
+}
+
+message CreatePairResponse {
+    uint32 id = 1;
+}
+
+message PairsRequest {
+    string name = 1;
+    string base_asset = 2;
+    string quote_asset = 3;
+    common.PaginationData pagination_data = 4;
+}
+
+message PairsResponse {
+    repeated Pair pairs = 1;
+    common.Meta meta = 2;
+}
+
+message CurrenciesRequest {
+    string name = 1;
+}
+
+message CurrenciesResponse {
+    repeated Currency currencies = 1;
+}
+
+message PairRequest {
+    uint32 id = 1;
+}
+
+message PairResponse {
+    Pair pair = 1;
+}
+
+message UpdatePairRequest {
+    uint32 id = 1;
+    string name = 2;
+    string base_asset = 3;
+    string quote_asset = 4;
+    repeated SupportedExchange supported_exchanges = 5;
+    int32 base_asset_precision = 6;
+    int32 quote_asset_precision = 7;
+}
+
+message UpdatePairResponse {
+    uint32 id = 1;
+}
+
+message DeletePairRequest {
+    uint32 id = 1;
+}
+
+message DeletePairResponse {
+    uint32 id = 1;
+}
+
+message UpdateUserTelegramIdRequest {
+    string user_public_id = 1;
+    int64 telegram_id = 2;
+}
+
+message UpdateUserTelegramIdResponse {
+    string user_public_id = 1;
+}
+
+
+service UserService {
+    rpc PrepareAuthenticationWithGoogle(PrepareAuthenticationWithGoogleRequest) returns (PrepareAuthenticationWithGoogleResponse);
+    rpc VerifyAuthenticationWithGoogle(VerifyAuthenticationWithGoogleRequest) returns (VerifyAuthenticationWithGoogleResponse);
+    rpc CheckRequestAccess(CheckRequestAccessRequest) returns (CheckRequestAccessResponse);
+    rpc LogoutUser(LogoutUserRequest) returns (LogoutUserResponse);
+    rpc Users(UsersRequest) returns (UsersResponse);
+    rpc UpdateUserProfile(UpdateUserProfileRequest) returns (UpdateUserProfileResponse);
+    rpc UserAPIKey(UserAPIKeyRequest) returns (UserAPIKeyResponse);
+    rpc UserAPIKeys(UserAPIKeysRequest) returns (UserAPIKeysResponse);
+    rpc CreateUserAPIKey(CreateUserAPIKeyRequest) returns (CreateUserAPIKeyResponse);
+    rpc UpdateUserAPIKey(UpdateUserAPIKeyRequest) returns (UpdateUserAPIKeyResponse);
+    rpc DeleteUserAPIKey(DeleteUserAPIKeyRequest) returns (DeleteUserAPIKeyResponse);
+    rpc UserProfile(UserProfileRequest) returns (UserProfileResponse);
+    rpc UserByPublicId(UserByPublicIdRequest) returns (UserByPublicIdResponse);
+    rpc UserTickets(UserTicketsRequest) returns (UserTicketsResponse);
+    rpc UserTicket(UserTicketRequest) returns (UserTicketResponse);
+    rpc CreateTicket(CreateTicketRequest) returns (CreateTicketResponse);
+    rpc AnswerTicket(AnswerTicketRequest) returns (AnswerTicketResponse);
+    rpc CreatePair(CreatePairRequest) returns (CreatePairResponse);
+    rpc UpdatePair(UpdatePairRequest) returns (UpdatePairResponse);
+    rpc DeletePair(DeletePairRequest) returns (DeletePairResponse);
+    rpc Pairs(PairsRequest) returns (PairsResponse);
+    rpc Pair(PairRequest) returns (PairResponse);
+    rpc Currencies(CurrenciesRequest) returns (CurrenciesResponse);
+    rpc UpdateUserTelegramId(UpdateUserTelegramIdRequest) returns (UpdateUserTelegramIdResponse);
+    rpc CloseTicket(CloseTicketRequest) returns (CloseTicketResponse);
+    // Users
+    // CreateUserAPIKey
+    // UserAPIKeys
+    // CreateUser
+    // rpc User(UserRequest) returns (UserResponse);
+    // rpc BookmarkBot(BookmarkBotRequest) returns (BookmarkBotResponse);
+    // rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+    // rpc RefreshCredentials(RefreshCredentialsRequest) returns (RefreshCredentialsResponse);
+    // rpc ChangeSubscription (ChangeSubscriptionRequest) returns (ChangeSubscriptionResponse);
+}
